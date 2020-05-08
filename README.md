@@ -30,16 +30,17 @@ You are now ready to get your K8s on! 😁
 
 * **05/08/2020**
   * Add Multiple datastore deployment
-
-
+  *  "VmName" = "Datastore" to be deployed
+```
   $VmToDatastore = @{
-    "esxi-1" = "NVME-1" # VmName = Datastore to be deployed
+    "esxi-1" = "NVME-1"
     "esxi-2" = "NVME-2"
     "esxi-3" = "NVME-2"
     "vcsa" = "NVME-2"
     "nsx" = "NVME-2"
     "nsx-edge" = "NVME-2"
-}
+}```
+
 
 * **04/13/2020**
   * Initial Release
