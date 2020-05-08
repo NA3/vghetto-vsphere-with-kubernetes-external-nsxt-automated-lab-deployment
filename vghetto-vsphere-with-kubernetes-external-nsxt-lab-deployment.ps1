@@ -1,53 +1,64 @@
 # Author: William Lam
 # Website: www.virtuallyghetto.com
 
+# Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false
+
 # vCenter Server used to deploy vSphere with Kubernetes Lab
-$VIServer = "mgmt-vcsa-01.cpbu.corp"
-$VIUsername = "administrator@vsphere.local"
-$VIPassword = "VMware1!"
+$VIServer = "vcenter.korporate.org"
+$VIUsername = "korporate\na.3"
+$VIPassword = "Your.Password"
 
 # Full Path to both the Nested ESXi 7.0 VA, Extracted VCSA 7.0 ISO & NSX-T OVAs
-$NestedESXiApplianceOVA = "C:\Users\william\Desktop\Project-Pacific\Nested_ESXi7.0_Appliance_Template_v1.ova"
-$VCSAInstallerPath = "C:\Users\william\Desktop\Project-Pacific\VMware-VCSA-all-7.0.0-15952498"
-$NSXTManagerOVA = "C:\Users\william\Desktop\Project-Pacific\nsx-unified-appliance-3.0.0.0.0.15946739.ova"
-$NSXTEdgeOVA = "C:\Users\william\Desktop\Project-Pacific\nsx-edge-3.0.0.0.0.15946012.ova"
+$NestedESXiApplianceOVA = "C:\Project-Pacific\Nested_ESXi7.0_Appliance_Template_v1.ova"
+$VCSAInstallerPath = "C:\Project-Pacific\VMware-VCSA-all-7.0.0-15952498"
+$NSXTManagerOVA = "C:\Project-Pacific\nsx-unified-appliance-3.0.0.0.0.15946739.ova"
+$NSXTEdgeOVA = "C:\Project-Pacific\nsx-edge-3.0.0.0.0.15946012.ova"
+
+# Multiple Datastore
+$VmToDatastore = @{
+    "esxi-1" = "NVME-1"
+    "esxi-2" = "NVME-2"
+    "esxi-3" = "NVME-2"
+    "vcsa" = "NVME-2"
+    "nsx" = "NVME-2"
+    "nsx-edge" = "NVME-2"
+}
 
 # Nested ESXi VMs to deploy
 $NestedESXiHostnameToIPs = @{
-    "pacific-esxi-7" = "172.17.31.113"
-    "pacific-esxi-8" = "172.17.31.114"
-    "pacific-esxi-9" = "172.17.31.115"
+    "esxi-1" = "1.25.52.21"
+    "esxi-2" = "1.25.52.22"
+    "esxi-3" = "1.25.52.23"
 }
 
 # Nested ESXi VM Resources
 $NestedESXivCPU = "4"
 $NestedESXivMEM = "24" #GB
-$NestedESXiCachingvDisk = "8" #GB
-$NestedESXiCapacityvDisk = "100" #GB
+$NestedESXiCachingvDisk = "16" #GB
+$NestedESXiCapacityvDisk = "250" #GB
 
 # VCSA Deployment Configuration
 $VCSADeploymentSize = "tiny"
-$VCSADisplayName = "pacific-vcsa-3"
-$VCSAIPAddress = "172.17.31.112"
-$VCSAHostname = "pacific-vcsa-3.cpbu.corp" #Change to IP if you don't have valid DNS
+$VCSADisplayName = "vcsa"
+$VCSAIPAddress = "1.25.52.20"
+$VCSAHostname = "vcsa.korporate.org" #Change to IP if you don't have valid DNS
 $VCSAPrefix = "24"
 $VCSASSODomainName = "vsphere.local"
-$VCSASSOPassword = "VMware1!"
-$VCSARootPassword = "VMware1!"
+$VCSASSOPassword = "Your.Password.pacific"
+$VCSARootPassword = "Your.Password.pacific"
 $VCSASSHEnable = "true"
 
 # General Deployment Configuration for Nested ESXi, VCSA & NSX VMs
-$VMDatacenter = "San Jose"
-$VMCluster = "Cluster-01"
-$VMNetwork = "SJC-CORP-MGMT"
-$VMDatastore = "vsanDatastore"
+$VMDatacenter = "Kore"
+$VMCluster = "Home"
+$VMNetwork = "VM Network"
 $VMNetmask = "255.255.255.0"
-$VMGateway = "172.17.31.253"
-$VMDNS = "172.17.31.5"
-$VMNTP = "pool.ntp.org"
-$VMPassword = "VMware1!"
-$VMDomain = "cpbu.corp"
-$VMSyslog = "172.17.31.112"
+$VMGateway = "1.25.52.254"
+$VMDNS = "1.25.52.253"
+$VMNTP = "1.25.52.253"
+$VMPassword = "Your.Password.pacific"
+$VMDomain = "korporate.org"
+#$VMSyslog = "172.17.31.112"
 $VMFolder = "Project-Pacific"
 # Applicable to Nested ESXi only
 $VMSSH = "true"
@@ -64,15 +75,15 @@ $StoragePolicyName = "pacific-gold-storage-policy"
 $StoragePolicyTagCategory = "pacific-demo-tag-category"
 $StoragePolicyTagName = "pacific-demo-storage"
 $DevOpsUsername = "devops"
-$DevOpsPassword = "VMware1!"
+$DevOpsPassword = "Your.Password.pacific"
 
 # NSX-T Configuration
-$NSXLicenseKey = ""
-$NSXRootPassword = "VMware1!VMware1!"
+$NSXLicenseKey = "" #Add your NSX-T Licence key
+$NSXRootPassword = "Your.Password.pacific"
 $NSXAdminUsername = "admin"
-$NSXAdminPassword = "VMware1!VMware1!"
+$NSXAdminPassword = "Your.Password.pacific"
 $NSXAuditUsername = "audit"
-$NSXAuditPassword = "VMware1!VMware1!"
+$NSXAuditPassword = "Your.Password.pacific"
 $NSXSSHEnable = "true"
 $NSXEnableRootLogin = "true"
 $NSXVTEPNetwork = "Pacific-VTEP"
@@ -100,11 +111,11 @@ $NetworkSegmentVlan = "0"
 
 # T0 Gateway
 $T0GatewayName = "Pacific-T0-Gateway"
-$T0GatewayInterfaceAddress = "172.17.31.119" # should be a routable address
+$T0GatewayInterfaceAddress = "1.25.52.99" # should be a routable address
 $T0GatewayInterfacePrefix = "24"
 $T0GatewayInterfaceStaticRouteName = "Pacific-Static-Route"
 $T0GatewayInterfaceStaticRouteNetwork = "0.0.0.0/0"
-$T0GatewayInterfaceStaticRouteAddress = "172.17.31.253"
+$T0GatewayInterfaceStaticRouteAddress = "1.25.52.254"
 
 # Uplink Profiles
 $ESXiUplinkProfileName = "ESXi-Host-Uplink-Profile"
@@ -127,16 +138,16 @@ $EdgeClusterName = "Edge-Cluster-01"
 $NSXTMgrDeploymentSize = "small"
 $NSXTMgrvCPU = "6" #override default size
 $NSXTMgrvMEM = "24" #override default size
-$NSXTMgrDisplayName = "pacific-nsx-3"
-$NSXTMgrHostname = "pacific-nsx-3.cpbu.corp"
-$NSXTMgrIPAddress = "172.17.31.118"
+$NSXTMgrDisplayName = "nsx"
+$NSXTMgrHostname = "nsx.korporate.org"
+$NSXTMgrIPAddress = "1.25.52.24"
 
 # NSX-T Edge Configuration
 $NSXTEdgeDeploymentSize = "medium"
 $NSXTEdgevCPU = "8" #override default size
 $NSXTEdgevMEM = "32" #override default size
 $NSXTEdgeHostnameToIPs = @{
-    "pacific-nsx-edge-3a" = "172.17.31.116"
+    "nsx-edge" = "1.25.52.25"
 }
 
 # Advanced Configurations
@@ -146,9 +157,9 @@ $addHostByDnsName = 1
 #### DO NOT EDIT BEYOND HERE ####
 
 $debug = $true
-$verboseLogFile = "pacific-nsxt-external-vghetto-lab-deployment.log"
-$random_string = -join ((65..90) + (97..122) | Get-Random -Count 8 | % {[char]$_})
-$VAppName = "vGhetto-Nested-Project-Pacific-NSX-T-External-Lab-$random_string"
+$verboseLogFile = "pacific-deployment.log"
+$random_string = -join ((65..90) + (97..122) | Get-Random -Count 4 | % {[char]$_})
+$VAppName = "Project-Pacific-$random_string"
 
 $preCheck = 1
 $confirmDeployment = 1
@@ -265,6 +276,155 @@ namespace CertificateCapture
     $hash = $sha256.ComputeHash($certBytes)
     $thumbprint = [BitConverter]::ToString($hash).Replace('-',':')
     return $thumbprint
+}
+
+Function Get-VMDatastore {
+    <#
+        Please see http://www.virtuallyghetto.com/2017/09/automating-vm-keystrokes-using-the-vsphere-api-powercli.html for more details
+    #>
+        param(
+            [Parameter(Mandatory=$true)][String]$VMName
+        )
+
+        $tempDatastoreName = $VmToDatastore[$VMName]
+        return $datastore = Get-Datastore -Server $viConnection -Name $tempDatastoreName  | Select -First 1
+
+}
+
+Function Set-VMKeystrokes {
+    <#
+        Please see http://www.virtuallyghetto.com/2017/09/automating-vm-keystrokes-using-the-vsphere-api-powercli.html for more details
+    #>
+        param(
+            [Parameter(Mandatory=$true)][String]$VMName,
+            [Parameter(Mandatory=$true)][String]$StringInput,
+            [Parameter(Mandatory=$false)][Boolean]$ReturnCarriage,
+            [Parameter(Mandatory=$false)][Boolean]$DebugOn
+        )
+
+        # Map subset of USB HID keyboard scancodes
+        # https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2
+        $hidCharacterMap = @{
+            "a"="0x04";
+            "b"="0x05";
+            "c"="0x06";
+            "d"="0x07";
+            "e"="0x08";
+            "f"="0x09";
+            "g"="0x0a";
+            "h"="0x0b";
+            "i"="0x0c";
+            "j"="0x0d";
+            "k"="0x0e";
+            "l"="0x0f";
+            "m"="0x10";
+            "n"="0x11";
+            "o"="0x12";
+            "p"="0x13";
+            "q"="0x14";
+            "r"="0x15";
+            "s"="0x16";
+            "t"="0x17";
+            "u"="0x18";
+            "v"="0x19";
+            "w"="0x1a";
+            "x"="0x1b";
+            "y"="0x1c";
+            "z"="0x1d";
+            "1"="0x1e";
+            "2"="0x1f";
+            "3"="0x20";
+            "4"="0x21";
+            "5"="0x22";
+            "6"="0x23";
+            "7"="0x24";
+            "8"="0x25";
+            "9"="0x26";
+            "0"="0x27";
+            "!"="0x1e";
+            "@"="0x1f";
+            "#"="0x20";
+            "$"="0x21";
+            "%"="0x22";
+            "^"="0x23";
+            "&"="0x24";
+            "*"="0x25";
+            "("="0x26";
+            ")"="0x27";
+            "_"="0x2d";
+            "+"="0x2e";
+            "{"="0x2f";
+            "}"="0x30";
+            "|"="0x31";
+            ":"="0x33";
+            "`""="0x34";
+            "~"="0x35";
+            "<"="0x36";
+            ">"="0x37";
+            "?"="0x38";
+            "-"="0x2d";
+            "="="0x2e";
+            "["="0x2f";
+            "]"="0x30";
+            "\"="0x31";
+            "`;"="0x33";
+            "`'"="0x34";
+            ","="0x36";
+            "."="0x37";
+            "/"="0x38";
+            " "="0x2c";
+        }
+
+        $vm = Get-View -ViewType VirtualMachine -Filter @{"Name"=$VMName}
+
+        # Verify we have a VM or fail
+        if(!$vm) {
+            Write-host "Unable to find VM $VMName"
+            return
+        }
+
+        $hidCodesEvents = @()
+        foreach($character in $StringInput.ToCharArray()) {
+            # Check to see if we've mapped the character to HID code
+            if($hidCharacterMap.ContainsKey([string]$character)) {
+                $hidCode = $hidCharacterMap[[string]$character]
+
+                $tmp = New-Object VMware.Vim.UsbScanCodeSpecKeyEvent
+
+                # Add leftShift modifer for capital letters and/or special characters
+                if( ($character -cmatch "[A-Z]") -or ($character -match "[!|@|#|$|%|^|&|(|)|_|+|{|}|||:|~|<|>|?]") ) {
+                    $modifer = New-Object Vmware.Vim.UsbScanCodeSpecModifierType
+                    $modifer.LeftShift = $true
+                    $tmp.Modifiers = $modifer
+                }
+
+                # Convert to expected HID code format
+                $hidCodeHexToInt = [Convert]::ToInt64($hidCode,"16")
+                $hidCodeValue = ($hidCodeHexToInt -shl 16) -bor 0007
+
+                $tmp.UsbHidCode = $hidCodeValue
+                $hidCodesEvents+=$tmp
+            } else {
+                My-Logger Write-Host "The following character `"$character`" has not been mapped, you will need to manually process this character"
+                break
+            }
+        }
+
+        # Add return carriage to the end of the string input (useful for logins or executing commands)
+        if($ReturnCarriage) {
+            # Convert return carriage to HID code format
+            $hidCodeHexToInt = [Convert]::ToInt64("0x28","16")
+            $hidCodeValue = ($hidCodeHexToInt -shl 16) + 7
+
+            $tmp = New-Object VMware.Vim.UsbScanCodeSpecKeyEvent
+            $tmp.UsbHidCode = $hidCodeValue
+            $hidCodesEvents+=$tmp
+        }
+
+        # Call API to send keystrokes to VM
+        $spec = New-Object Vmware.Vim.UsbScanCodeSpec
+        $spec.KeyEvents = $hidCodesEvents
+        $results = $vm.PutUsbScanCodes($spec)
 }
 
 Function My-Logger {
@@ -513,7 +673,8 @@ if( $deployNestedESXiVMs -eq 1 -or $deployVCSA -eq 1 -or $deployNSXManager -eq 1
     My-Logger "Connecting to Management vCenter Server $VIServer ..."
     $viConnection = Connect-VIServer $VIServer -User $VIUsername -Password $VIPassword -WarningAction SilentlyContinue
 
-    $datastore = Get-Datastore -Server $viConnection -Name $VMDatastore | Select -First 1
+    #$datastore = Get-Datastore -Server $viConnection -Name $VMDatastore | Select -First 1
+    
     $cluster = Get-Cluster -Server $viConnection -Name $VMCluster
     $datacenter = $cluster | Get-Datacenter
     $vmhost = $cluster | Get-VMHost | Select -First 1
@@ -544,11 +705,9 @@ if($deployNestedESXiVMs -eq 1) {
         }
         $ovfconfig.common.guestinfo.ssh.value = $VMSSHVar
 
-        if($configureVSANDiskGroup -eq 0) {
-            $ovfconfig.common.guestinfo.createvmfs.value = $true
-        }
+        $datastore = Get-VMDatastore($VMName)
+        My-Logger "Deploying Nested ESXi VM $VMName on $datastore ..."
 
-        My-Logger "Deploying Nested ESXi VM $VMName ..."
         $vm = Import-VApp -Source $NestedESXiApplianceOVA -OvfConfiguration $ovfconfig -Name $VMName -Location $cluster -VMHost $vmhost -Datastore $datastore -DiskStorageFormat thin
 
         My-Logger "Adding vmnic2/vmnic3 to $NSXVTEPNetwork ..."
@@ -564,16 +723,13 @@ if($deployNestedESXiVMs -eq 1) {
         My-Logger "Updating vCPU Count to $NestedESXivCPU & vMEM to $NestedESXivMEM GB ..."
         Set-VM -Server $viConnection -VM $vm -NumCpu $NestedESXivCPU -MemoryGB $NestedESXivMEM -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
 
-        if($configureVSANDiskGroup -eq 1) {
-            My-Logger "Updating vSAN Cache VMDK size to $NestedESXiCachingvDisk GB & Capacity VMDK size to $NestedESXiCapacityvDisk GB ..."
-            Get-HardDisk -Server $viConnection -VM $vm -Name "Hard disk 2" | Set-HardDisk -CapacityGB $NestedESXiCachingvDisk -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
-            Get-HardDisk -Server $viConnection -VM $vm -Name "Hard disk 3" | Set-HardDisk -CapacityGB $NestedESXiCapacityvDisk -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
-        } else {
-            Get-HardDisk -Server $viConnection -VM $vm -Name "Hard disk 3" | Set-HardDisk -CapacityGB $NestedESXiCapacityvDisk -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
-        }
+        My-Logger "Updating vSAN Cache VMDK size to $NestedESXiCachingvDisk GB & Capacity VMDK size to $NestedESXiCapacityvDisk GB ..."
+        Get-HardDisk -Server $viConnection -VM $vm -Name "Hard disk 2" | Set-HardDisk -CapacityGB $NestedESXiCachingvDisk -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
+        Get-HardDisk -Server $viConnection -VM $vm -Name "Hard disk 3" | Set-HardDisk -CapacityGB $NestedESXiCapacityvDisk -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
 
         My-Logger "Powering On $vmname ..."
         $vm | Start-Vm -RunAsync | Out-Null
+
     }
 }
 
@@ -611,7 +767,9 @@ if($deployNSXManager -eq 1) {
     $nsxMgrOvfConfig.Common.nsx_cli_audit_username.Value = $NSXAuditUsername
     $nsxMgrOvfConfig.Common.nsx_cli_audit_passwd_0.Value = $NSXAuditPassword
 
-    My-Logger "Deploying NSX Manager VM $NSXTMgrDisplayName ..."
+    $datastore = Get-VMDatastore($NSXTMgrDisplayName)
+    My-Logger "Deploying NSX Manager VM $NSXTMgrDisplayName on $datastore..."
+    
     $nsxmgr_vm = Import-VApp -Source $NSXTManagerOVA -OvfConfiguration $nsxMgrOvfConfig -Name $NSXTMgrDisplayName -Location $cluster -VMHost $vmhost -Datastore $datastore -DiskStorageFormat thin
 
     My-Logger "Updating vCPU Count to $NSXTMgrvCPU & vMEM to $NSXTMgrvMEM GB ..."
@@ -630,6 +788,7 @@ if($deployVCSA -eq 1) {
         } else {
             $config = (Get-Content -Raw "$($VCSAInstallerPath)/vcsa-cli-installer/templates/install/embedded_vCSA_on_VC.json") | convertfrom-json
         }
+        $datastore = Get-VMDatastore($VCSADisplayName)
         $config.'new_vcsa'.vc.hostname = $VIServer
         $config.'new_vcsa'.vc.username = $VIUsername
         $config.'new_vcsa'.vc.password = $VIPassword
@@ -658,31 +817,38 @@ if($deployVCSA -eq 1) {
         $config.'new_vcsa'.sso.password = $VCSASSOPassword
         $config.'new_vcsa'.sso.domain_name = $VCSASSODomainName
 
+        #$featureFlags = [pscustomobject] @{
+        #    "prop:guestinfo.cis.feature.states" = "NSX_Integrated=disabled";
+        #    "X:enableHiddenProperties" = "";
+        #}
+        #$config.new_vcsa | Add-Member -MemberType NoteProperty -Name "ovftool_arguments" -Value $featureFlags
+
         if($IsWindows) {
             My-Logger "Creating VCSA JSON Configuration file for deployment ..."
             $config | ConvertTo-Json | Set-Content -Path "$($ENV:Temp)\jsontemplate.json"
 
-            My-Logger "Deploying the VCSA ..."
+            My-Logger "Deploying the VCSA on $datastore ..."
             Invoke-Expression "$($VCSAInstallerPath)\vcsa-cli-installer\win32\vcsa-deploy.exe install --no-esx-ssl-verify --accept-eula --acknowledge-ceip $($ENV:Temp)\jsontemplate.json"| Out-File -Append -LiteralPath $verboseLogFile
         } elseif($IsMacOS) {
             My-Logger "Creating VCSA JSON Configuration file for deployment ..."
             $config | ConvertTo-Json | Set-Content -Path "$($ENV:TMPDIR)jsontemplate.json"
 
-            My-Logger "Deploying the VCSA ..."
+            My-Logger "Deploying the VCSA on $datastore ..."
             Invoke-Expression "$($VCSAInstallerPath)/vcsa-cli-installer/mac/vcsa-deploy install --no-esx-ssl-verify --accept-eula --acknowledge-ceip $($ENV:TMPDIR)jsontemplate.json"| Out-File -Append -LiteralPath $verboseLogFile
         } elseif ($IsLinux) {
             My-Logger "Creating VCSA JSON Configuration file for deployment ..."
             $config | ConvertTo-Json | Set-Content -Path "/tmp/jsontemplate.json"
 
-            My-Logger "Deploying the VCSA ..."
+            My-Logger "Deploying the VCSA on $datastore ..."
             Invoke-Expression "$($VCSAInstallerPath)/vcsa-cli-installer/lin64/vcsa-deploy install --no-esx-ssl-verify --accept-eula --acknowledge-ceip /tmp/jsontemplate.json"| Out-File -Append -LiteralPath $verboseLogFile
         }
 }
 
 if($deployNSXEdge -eq 1) {
+    <#
     My-Logger "Setting up NSX-T Edge to join NSX-T Management Plane ..."
     if(!(Connect-NsxtServer -Server $NSXTMgrHostname -Username $NSXAdminUsername -Password $NSXAdminPassword -WarningAction SilentlyContinue)) {
-        Write-Host -ForegroundColor Red "Unable to connect to NSX-T Manager, please check the deployment"
+        Write-Host -ForegroundColor Red "Unable to connect to NSX Manager, please check the deployment"
         exit
     } else {
         My-Logger "Successfully logged into NSX-T Manager $NSXTMgrHostname  ..."
@@ -693,24 +859,19 @@ if($deployNSXEdge -eq 1) {
     $nsxMgrID = ((Get-NsxtService -Name "com.vmware.nsx.cluster.nodes").list().results | where {$_.manager_role -ne $null}).id
     $nsxMgrCertThumbprint = (Get-NsxtService -Name "com.vmware.nsx.cluster.nodes").get($nsxMgrID).manager_role.api_listen_addr.certificate_sha256_thumbprint
 
-    My-Logger "Accepting NSX Manager EULA ..."
-    $eulaService = Get-NsxtService -Name "com.vmware.nsx.eula.accept"
-    $eulaService.create()
-
-    $LicenseService = Get-NsxtService -Name "com.vmware.nsx.licenses"
-    $LicenseSpec = $LicenseService.Help.create.license.Create()
-    $LicenseSpec.license_key = $NSXLicenseKey
-    $LicenseResult = $LicenseService.create($LicenseSpec)
+    $tokenRegService = Get-NsxtService "com.vmware.nsx.aaa.registration_token"
+    $token = ($tokenRegService.create()).token
 
     My-Logger "Disconnecting from NSX-T Manager ..."
     Disconnect-NsxtServer -Confirm:$false
+    #>
 
     # Deploy Edges
     $nsxEdgeOvfConfig = Get-OvfConfiguration $NSXTEdgeOVA
     $NSXTEdgeHostnameToIPs.GetEnumerator() | Sort-Object -Property Value | Foreach-Object {
         $VMName = $_.Key
         $VMIPAddress = $_.Value
-        $VMHostname = "$VMName" + "." + $VMDomain
+        $VMHostname = "$VMName" + "@" + $VMDomain
 
         $nsxEdgeOvfConfig.DeploymentOption.Value = $NSXTEdgeDeploymentSize
         $nsxEdgeOvfConfig.NetworkMapping.Network_0.value = $VMNetwork
@@ -726,10 +887,9 @@ if($deployNSXEdge -eq 1) {
         $nsxEdgeOvfConfig.Common.nsx_domain_0.Value = $VMDomain
         $nsxEdgeOvfConfig.Common.nsx_ntp_0.Value = $VMNTP
 
-        $nsxEdgeOvfConfig.Common.mpUser.Value = $NSXAdminUsername
-        $nsxEdgeOvfConfig.Common.mpPassword.Value = $NSXAdminPassword
-        $nsxEdgeOvfConfig.Common.mpIp.Value = $NSXTMgrIPAddress
-        $nsxEdgeOvfConfig.Common.mpThumbprint.Value = $nsxMgrCertThumbprint
+        #$nsxEdgeOvfConfig.Common.mpNodeId.Value = $nsxMgrID
+        #$nsxEdgeOvfConfig.Common.mpIp.Value = $NSXTMgrIPAddress
+        #$nsxEdgeOvfConfig.Common.mpThumbprint.Value = $nsxMgrCertThumbprint
 
         if($NSXSSHEnable -eq "true") {
             $NSXSSHEnableVar = $true
@@ -750,7 +910,8 @@ if($deployNSXEdge -eq 1) {
         $nsxEdgeOvfConfig.Common.nsx_cli_audit_username.Value = $NSXAuditUsername
         $nsxEdgeOvfConfig.Common.nsx_cli_audit_passwd_0.Value = $NSXAuditPassword
 
-        My-Logger "Deploying NSX Edge VM $VMName ..."
+        $datastore = Get-VMDatastore($VMName)
+        My-Logger "Deploying NSX Edge VM $VMName  on $datastore ..."
         $nsxedge_vm = Import-VApp -Source $NSXTEdgeOVA -OvfConfiguration $nsxEdgeOvfConfig -Name $VMName -Location $cluster -VMHost $vmhost -Datastore $datastore -DiskStorageFormat thin
 
         My-Logger "Updating vCPU Count to $NSXTEdgevCPU & vMEM to $NSXTEdgevMEM GB ..."
@@ -819,13 +980,8 @@ if($setupNewVC -eq 1) {
 
     $c = Get-Cluster -Server $vc $NewVCVSANClusterName -ErrorAction Ignore
     if( -Not $c) {
-        if($configureVSANDiskGroup -eq 1) {
-            My-Logger "Creating VSAN Cluster $NewVCVSANClusterName ..."
-            New-Cluster -Server $vc -Name $NewVCVSANClusterName -Location (Get-Datacenter -Name $NewVCDatacenterName -Server $vc) -DrsEnabled -HAEnabled -VsanEnabled | Out-File -Append -LiteralPath $verboseLogFile
-        } else {
-            My-Logger "Creating vSphere Cluster $NewVCVSANClusterName ..."
-            New-Cluster -Server $vc -Name $NewVCVSANClusterName -Location (Get-Datacenter -Name $NewVCDatacenterName -Server $vc) -DrsEnabled -HAEnabled | Out-File -Append -LiteralPath $verboseLogFile
-        }
+        My-Logger "Creating VSAN Cluster $NewVCVSANClusterName ..."
+        New-Cluster -Server $vc -Name $NewVCVSANClusterName -Location (Get-Datacenter -Name $NewVCDatacenterName -Server $vc) -DrsEnabled -HAEnabled -VsanEnabled | Out-File -Append -LiteralPath $verboseLogFile
         (Get-Cluster $NewVCVSANClusterName) | New-AdvancedSetting -Name "das.ignoreRedundantNetWarning" -Type ClusterHA -Value $true -Confirm:$false | Out-File -Append -LiteralPath $verboseLogFile
     }
 
@@ -861,11 +1017,6 @@ if($setupNewVC -eq 1) {
             }
             My-Logger "Creating VSAN DiskGroup for $vmhost ..."
             New-VsanDiskGroup -Server $vc -VMHost $vmhost -SsdCanonicalName $vsanCacheDisk -DataDiskCanonicalName $vsanCapacityDisk | Out-File -Append -LiteralPath $verboseLogFile
-        }
-    } else {
-        foreach ($vmhost in Get-Cluster -Server $vc | Get-VMHost) {
-            $localDS = ($vmhost | Get-Datastore) | where {$_.type -eq "VMFS"}
-            $localDS | Set-Datastore -Server $vc -Name "not-supported-datastore" | Out-File -Append -LiteralPath $verboseLogFile
         }
     }
 
@@ -910,15 +1061,10 @@ if($setupNewVC -eq 1) {
     }
 
     if($setupPacificStoragePolicy) {
-        if($configureVSANDiskGroup -eq 1) {
-            $datastoreName = "vsanDatastore"
-        } else {
-            $datastoreName = ((Get-Cluster -Server $vc | Get-VMHost | Select -First 1 | Get-Datastore) | where {$_.type -eq "VMFS"}).name
-        }
-        My-Logger "Creating Project Pacific Storage Policies and attaching to $datastoreName ..."
+        My-Logger "Creating Project Pacific Storage Policies and attaching to vsanDatastore ..."
         New-TagCategory -Server $vc -Name $StoragePolicyTagCategory -Cardinality single -EntityType Datastore | Out-File -Append -LiteralPath $verboseLogFile
         New-Tag -Server $vc -Name $StoragePolicyTagName -Category $StoragePolicyTagCategory | Out-File -Append -LiteralPath $verboseLogFile
-        Get-Datastore -Server $vc -Name $datastoreName | New-TagAssignment -Server $vc -Tag $StoragePolicyTagName | Out-File -Append -LiteralPath $verboseLogFile
+        Get-Datastore -Server $vc -Name "vsanDatastore" | New-TagAssignment -Server $vc -Tag $StoragePolicyTagName | Out-File -Append -LiteralPath $verboseLogFile
         New-SpbmStoragePolicy -Server $vc -Name $StoragePolicyName -AnyOfRuleSets (New-SpbmRuleSet -Name "pacific-ruleset" -AllOfRules (New-SpbmRule -AnyOfTags (Get-Tag $StoragePolicyTagName))) | Out-File -Append -LiteralPath $verboseLogFile
     }
 
@@ -936,6 +1082,9 @@ if($postDeployNSXConfig -eq 1) {
     }
 
     $runHealth=$true
+    $runEULA=$true
+    $runLicense=$true
+    $runEdgeJoin=$true
     $runCEIP=$true
     $runAddVC=$true
     $runIPPool=$true
@@ -981,12 +1130,77 @@ if($postDeployNSXConfig -eq 1) {
         }
     }
 
+    if($runEULA) {
+        My-Logger "Accepting NSX Manager EULA ..."
+        $eulaService = Get-NsxtService -Name "com.vmware.nsx.eula.accept"
+        $eulaService.create()
+    }
+
+    if($runLicense) {
+        $LicenseService = Get-NsxtService -Name "com.vmware.nsx.licenses"
+        $LicenseSpec = $LicenseService.Help.create.license.Create()
+        $LicenseSpec.license_key = $NSXLicenseKey
+        $LicenseResult = $LicenseService.create($LicenseSpec)
+    }
+
     if($runCEIP) {
         My-Logger "Accepting CEIP Agreement ..."
         $ceipAgreementService = Get-NsxtService -Name "com.vmware.nsx.telemetry.agreement"
         $ceipAgreementSpec = $ceipAgreementService.get()
         $ceipAgreementSpec.telemetry_agreement_displayed = $true
         $agreementResult = $ceipAgreementService.update($ceipAgreementSpec)
+    }
+
+    if($runEdgeJoin -eq 1) {
+        My-Logger "Setting up NSX-T Edge to join NSX-T Management Plane ..."
+
+        My-Logger "Connecting back to Management vCenter Server $VIServer ..."
+        Connect-VIServer $VIServer -User $VIUsername -Password $VIPassword -WarningAction SilentlyContinue | Out-Null
+
+        # Retrieve NSX Manager Thumbprint which will be needed later
+        My-Logger "Retrieving NSX Manager Thumbprint ..."
+        $nsxMgrID = ((Get-NsxtService -Name "com.vmware.nsx.cluster.nodes").list().results | where {$_.manager_role -ne $null}).id
+        $nsxMgrCertThumbprint = (Get-NsxtService -Name "com.vmware.nsx.cluster.nodes").get($nsxMgrID).manager_role.api_listen_addr.certificate_sha256_thumbprint
+
+        ### Setup NSX Edges
+        $NSXTEdgeHostnameToIPs.GetEnumerator() | Sort-Object -Property Value | Foreach-Object {
+            $nsxEdgeName = $_.name
+            $nsxEdgeIp = $_.value
+
+            My-Logger "Configuring NSX Edge $nsxEdgeName ..."
+
+            # Login by passing in admin username <enter>
+            if($debug) { My-Logger "Sending admin username ..." }
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $NSXAdminUsername -ReturnCarriage $true
+            Start-Sleep 2
+
+            # Login by passing in admin password <enter>
+            if($debug) { My-Logger "Sending admin password ..." }
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $NSXAdminPassword -ReturnCarriage $true
+            Start-Sleep 5
+
+            # Setting Hostname since OVF properties don't do this automatically :(
+            if($debug) { My-Logger "Sending set hostname command ..." }
+            $hostnameCmd = "set hostname $nsxEdgeName"
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $hostnameCmd -ReturnCarriage $true
+            Start-Sleep 10
+
+            # Join NSX Edge to NSX Manager
+            if($debug) { My-Logger "Sending join management plane command ..." }
+            $joinMgmtCmd1 = "join management-plane $NSXTMgrIPAddress username $NSXAdminUsername thumbprint $nsxMgrCertThumbprint"
+            $joinMgmtCmd2 = "$NSXAdminPassword"
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $joinMgmtCmd1 -ReturnCarriage $true
+            Start-Sleep 5
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $joinMgmtCmd2 -ReturnCarriage $true
+            Start-Sleep 20
+
+            # Exit Console
+            if($debug) { My-Logger "Sending final exit ..." }
+            Set-VMKeystrokes -VMName $nsxEdgeName -StringInput "exit" -ReturnCarriage $true
+        }
+
+        My-Logger "Disconnecting from Management vCenter ..."
+        Disconnect-VIServer * -Confirm:$false
     }
 
     if($runAddVC) {
