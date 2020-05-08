@@ -39,8 +39,8 @@ You are now ready to get your K8s on! 😁
     "vcsa" = "NVME-2"
     "nsx" = "NVME-2"
     "nsx-edge" = "NVME-2"
-}```
-
+   }
+```
 
 * **04/13/2020**
   * Initial Release
